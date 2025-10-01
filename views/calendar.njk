@@ -35,26 +35,29 @@
                   </div>
                 </div>
               {% endif %}
-              <h1 class="title is-2">{{ calendar.name }}</h1>
-              <p class="subtitle is-5">{{ calendar.description }}</p>
-              <p class="mb-4">
-                <strong>Timezone:</strong>
-                {{ calendar.owner.timezone }}</p>
               <div id="spots-container">
                 {% for group in groupedSpots %}
-                  <div>
-                    <h3 class="spot-date" data-date="{{ group.day }}">{{ group.day }}</h3>
-                    <div>
+                  <div class="day-group">
+                    <h3 class="day-title spot-date" data-date="{{ group.day }}">{{ group.day }}</h3>
+                    <div class="slots-list">
                       {% for spot in group.spots %}
-                        <div>
-                          <p class="spot-time" data-time="{{ spot.startDate }}" data-end-time="{{ spot.endDate }}"></p>
-                          {% if spot.isReserved %}
-                            <p>Reserved</p>
-                          {% else %}
-                            <a href="/reserve/{{ spot.spotId }}?startDate={{ spot.startDate }}&endDate={{ spot.endDate }}&timezone={{ calendar.owner.timezone }}&location={{ calendar.name }}">
-                              Available</a>
-                          {% endif %}
-                        </div>
+                        {% if spot.isReserved %}
+                          <div class="slot locked">
+                            <span class="spot-time" data-time="{{ spot.startDate }}" data-end-time="{{ spot.endDate }}"></span>
+                            <span class="room">{{ spot.location or calendar.location or calendar.name }}</span>
+                            <span class="icon">
+                              <i class="fas fa-lock"></i>
+                            </span>
+                          </div>
+                        {% else %}
+                          <a href="/reserve/{{ spot.spotId }}?startDate={{ spot.startDate }}&endDate={{ spot.endDate }}&timezone={{ calendar.owner.timezone }}&location={{ spot.location or calendar.location or calendar.name }}" class="slot unlocked">
+                            <span class="spot-time" data-time="{{ spot.startDate }}" data-end-time="{{ spot.endDate }}"></span>
+                            <span class="room">{{ spot.location or calendar.location or calendar.name }}</span>
+                            <span class="icon">
+                              <i class="fas fa-arrow-right"></i>
+                            </span>
+                          </a>
+                        {% endif %}
                       {% endfor %}
                     </div>
                   </div>

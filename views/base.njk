@@ -12,26 +12,14 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-  <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="/">
+  <header class="navbar">
+    <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+      <a href="/" style="display: flex; align-items: center; text-decoration: none; color: white;">
         <img src="/images/hamaki-logo.svg" alt="Hamaki" width="40" height="45">
-        <strong style="margin-left: 10px;">Hamaki</strong>
-      </a>
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
-        <span aria-hidden="true"></span>
+        <strong class="header-title" style="margin-left: 10px;">Hamaki</strong>
       </a>
     </div>
-
-    <div id="navbarMenu" class="navbar-menu">
-      <div class="navbar-start">
-        <a class="navbar-item" href="/">Home</a>
-        <a class="navbar-item" href="/about">About</a>
-      </div>
-    </div>
-  </nav>
+  </header>
 
   <main>
     {% block content %}{% endblock %}
@@ -40,7 +28,7 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        <strong>Hamaki</strong> - Built with Express, Nunjucks, and Bulma
+        made with &lt;3 by <a href="https://mastodon.design/@potloodgum" target="_blank">Potloodgum</a> and <a href="https://mastodon.social/@Dongelen" target="_blank">Dongelen</a>
       </p>
     </div>
   </footer>

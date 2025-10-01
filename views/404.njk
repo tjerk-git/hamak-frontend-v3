@@ -5,10 +5,10 @@
       <div class="columns is-centered">
         <div class="column is-8">
           <div>
-            <h1 class="title is-1">The waiting game..</h1>
-            <p class="mb-5">Time to pencil yourself in...</p>
+            <h1 class="title is-1" style="color: white;">The waiting game..</h1>
+            <p class="mb-5" style="color: white;">Time to pencil yourself in...</p>
             <div style="position: relative; display: inline-block;">
-              <canvas id="drawing-canvas" width="800" height="500" style="border: 2px solid #ddd; cursor: none; display: block;"></canvas>
+              <canvas id="drawing-canvas" width="800" height="500" style="border: 2px solid #ddd; cursor: none; display: block; background-color: white;"></canvas>
               <canvas id="cursor-canvas" width="800" height="500" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
             </div>
             <div class="buttons is-centered mt-4">
@@ -24,12 +24,6 @@
                 </span>
                 <span>Change Color</span>
               </button>
-              <a href="/" class="button is-primary">
-                <span class="icon">
-                  <i class="fas fa-home"></i>
-                </span>
-                <span>Go Home</span>
-              </a>
               <button class="button is-link" id="send-artwork-btn">
                 <span class="icon">
                   <i class="fas fa-paper-plane"></i>

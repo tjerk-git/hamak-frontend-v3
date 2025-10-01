@@ -21,11 +21,6 @@
                 <p>
                   <strong>Location:</strong>
                   {{ spot.location }}</p>
-                {% if visitor and visitor.name %}
-                  <p>
-                    <strong>Name:</strong>
-                    {{ visitor.name }}</p>
-                {% endif %}
               </div>
             </div>
             <div class="box">
@@ -37,12 +32,6 @@
                   </span>
                   <span>Add to Calendar (ICS)</span>
                 </a>
-                <label class="button is-link" for="artwork-input">
-                  <span class="icon">
-                    <i class="fas fa-image"></i>
-                  </span>
-                  <span>Upload Artwork (PNG)</span>
-                </label>
                 <input id="artwork-input" type="file" accept="image/png" style="display:none;"/>
                 <button class="button is-danger" id="cancel-btn">
                   <span class="icon">

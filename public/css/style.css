@@ -28,7 +28,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--primary-60);
+  background: linear-gradient(to bottom, #5228cd, #7856d5);
   color: var(--text-dark);
 }
 
@@ -37,7 +37,17 @@ main {
 }
 
 .navbar {
-  background-color: var(--secondary-30) !important;
+  background: linear-gradient(to right, #6232e6, #491cc3) !important;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-title {
+  font-family: 'Thunder', sans-serif;
+  font-weight: 600;
+  font-size: 3rem;
 }
 
 .navbar-item {
@@ -85,8 +95,17 @@ a:hover {
 }
 
 .footer {
-  background-color: var(--secondary-30);
+  background: linear-gradient(to right, #6232e6, #491cc3);
   color: white;
+}
+
+.footer a {
+  color: white;
+  text-decoration: underline;
+}
+
+.footer a:hover {
+  color: #f0f0f0;
 }
 
 /* Remove all shadows */
@@ -115,4 +134,89 @@ a:hover {
 
 #clientContent {
   margin-top: 1rem;
+}
+
+.day-group {
+  margin-bottom: 2.5rem;
+}
+
+.day-title {
+  font-family: 'Thunder', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  color: white;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+/* Locked slots */
+.slot.locked {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: not-allowed;
+}
+
+/* Available slots */
+.slot.unlocked {
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.slot.unlocked:hover {
+  background: white;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  color: #333;
+}
+
+.slot .spot-time {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.slot .icon {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.slot.locked .icon {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.slot.unlocked .icon {
+  color: #6232e6;
+}
+
+.slot span.room {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+.reserve-link {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
