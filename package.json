@@ -1,0 +1,19 @@
+{
+  "name": "hamaki-frontend",
+  "version": "1.0.0",
+  "description": "Hamaki Frontend - Express + Nunjucks",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "nunjucks": "^3.2.4"
+  }
+}

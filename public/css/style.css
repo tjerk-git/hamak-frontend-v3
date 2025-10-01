@@ -1,0 +1,118 @@
+/* Custom styles */
+
+/* Thunder SemiBold font */
+@font-face {
+  font-family: 'Thunder';
+  src: url('/fonts/Thunder-SemiBoldLC.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Color scheme - 60/30/10 rule with #704CD3 as accent */
+:root {
+  --primary-60: #F5F3F9;      /* 60% - Light purple/gray background */
+  --secondary-30: #9B7FD9;    /* 30% - Medium purple for secondary elements */
+  --accent-10: #704CD3;       /* 10% - Vibrant purple for accents */
+  --text-dark: #2B2B2B;       /* Dark text */
+  --text-light: #6B6B6B;      /* Light text */
+}
+
+/* Typography - Thunder SemiBold for headings */
+h1, h2, h3, h4, h5, h6,
+.title, .subtitle {
+  font-family: 'Thunder', sans-serif;
+  font-weight: 600;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--primary-60);
+  color: var(--text-dark);
+}
+
+main {
+  flex: 1;
+}
+
+.navbar {
+  background-color: var(--secondary-30) !important;
+}
+
+.navbar-item {
+  color: white !important;
+}
+
+.navbar-item:hover {
+  background-color: var(--accent-10) !important;
+}
+
+.navbar-burger {
+  cursor: pointer;
+  color: white;
+}
+
+.button.is-primary {
+  background-color: var(--accent-10) !important;
+  border-color: var(--accent-10) !important;
+}
+
+.button.is-primary:hover {
+  background-color: #5d3db0 !important;
+}
+
+.box {
+  background-color: white;
+  border-left: 4px solid var(--accent-10);
+  box-shadow: none !important;
+}
+
+.title {
+  color: var(--accent-10);
+}
+
+.subtitle {
+  color: var(--secondary-30);
+}
+
+a {
+  color: var(--accent-10);
+}
+
+a:hover {
+  color: var(--secondary-30);
+}
+
+.footer {
+  background-color: var(--secondary-30);
+  color: white;
+}
+
+/* Remove all shadows */
+* {
+  box-shadow: none !important;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+  overflow: hidden;
+}
+
+#clientContent {
+  margin-top: 1rem;
+}

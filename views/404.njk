@@ -1,0 +1,111 @@
+{% extends "base.njk" %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="box has-text-centered">
+          <h1 class="title is-1">404</h1>
+          <h2 class="subtitle is-3">Page Not Found</h2>
+          <p class="mb-5">Time to pencil yourself in...</p>
+
+          <div style="position: relative; display: inline-block;">
+            <canvas id="drawing-canvas" width="800" height="500" style="border: 2px solid #ddd; cursor: none; display: block;"></canvas>
+            <canvas id="cursor-canvas" width="800" height="500" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+          </div>
+
+          <div class="buttons is-centered mt-4">
+            <button class="button is-warning" id="clear-btn">
+              <span class="icon"><i class="fas fa-eraser"></i></span>
+              <span>Clear Canvas</span>
+            </button>
+            <button class="button is-info" id="color-btn">
+              <span class="icon"><i class="fas fa-palette"></i></span>
+              <span>Change Color</span>
+            </button>
+            <a href="/" class="button is-primary">
+              <span class="icon"><i class="fas fa-home"></i></span>
+              <span>Go Home</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const canvas = document.getElementById('drawing-canvas');
+  const ctx = canvas.getContext('2d');
+  const cursorCanvas = document.getElementById('cursor-canvas');
+  const cursorCtx = cursorCanvas.getContext('2d');
+
+  const colors = ['#704CD3', '#9B7FD9', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+  let currentColor = colors[0];
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // Hamaki logo as cursor
+  const hamakiLogo = new Image();
+  hamakiLogo.src = '/hamaki-logo.png';
+
+  function drawCursor(x, y) {
+    cursorCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+    cursorCtx.save();
+    cursorCtx.translate(x, y);
+    cursorCtx.rotate(-Math.PI / 4);
+    cursorCtx.drawImage(hamakiLogo, -15, -15, 30, 30);
+    cursorCtx.restore();
+  }
+
+  canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const rect = canvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    drawCursor(x, y);
+
+    if (isDrawing) {
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+
+      lastX = x;
+      lastY = y;
+    }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    isDrawing = false;
+    cursorCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+  });
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  document.getElementById('color-btn').addEventListener('click', () => {
+    const currentIndex = colors.indexOf(currentColor);
+    currentColor = colors[(currentIndex + 1) % colors.length];
+  });
+</script>
+{% endblock %}
