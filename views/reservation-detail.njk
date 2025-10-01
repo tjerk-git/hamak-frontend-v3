@@ -1,154 +1,227 @@
 {% extends "base.njk" %}
-
 {% block content %}
-<section class="section">
-  <div class="container">
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div id="main-content">
-          <div class="box">
-            <h1 class="title is-3">Appointment Details</h1>
-
-            <div class="content">
-              <p><strong>Calendar:</strong> {{ reservation.spot.calendar.name }}</p>
-              <p><strong>Time:</strong> <span id="appointment-time">{{ reservation.spot.startTime }}</span></p>
-              <p><strong>Timezone:</strong> {{ reservation.spot.timezone }}</p>
-              <p><strong>Location:</strong> {{ reservation.spot.location }}</p>
-
-              {% if reservation.visitorName %}
-                <p><strong>Name:</strong> {{ reservation.visitorName }}</p>
-              {% endif %}
-
-              {% if reservation.visitorEmail %}
-                <p><strong>Email:</strong> {{ reservation.visitorEmail }}</p>
-              {% endif %}
-
-              {% if reservation.comment %}
-                <p><strong>Comment:</strong> {{ reservation.comment }}</p>
-              {% endif %}
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div id="main-content">
+            <div class="box">
+              <h1 class="title is-3">Appointment Details</h1>
+              <div class="content">
+                <p>
+                  <strong>Calendar:</strong>
+                  {{ calendar.name }}</p>
+                <p>
+                  <strong>Time:</strong>
+                  <span id="appointment-time">{{ bestGuessStartDate }}</span>
+                </p>
+                <p>
+                  <strong>Timezone:</strong>
+                  {{ calendar.owner.timezone }}</p>
+                <p>
+                  <strong>Location:</strong>
+                  {{ spot.location }}</p>
+                {% if visitor and visitor.name %}
+                  <p>
+                    <strong>Name:</strong>
+                    {{ visitor.name }}</p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="box">
+              <h2 class="title is-5">Actions</h2>
+              <div class="buttons">
+                <a class="button is-primary" href="{{ icsURL }}" target="_blank" rel="noopener" download>
+                  <span class="icon">
+                    <i class="fas fa-calendar-plus"></i>
+                  </span>
+                  <span>Add to Calendar (ICS)</span>
+                </a>
+                <label class="button is-link" for="artwork-input">
+                  <span class="icon">
+                    <i class="fas fa-image"></i>
+                  </span>
+                  <span>Upload Artwork (PNG)</span>
+                </label>
+                <input id="artwork-input" type="file" accept="image/png" style="display:none;"/>
+                <button class="button is-danger" id="cancel-btn">
+                  <span class="icon">
+                    <i class="fas fa-times"></i>
+                  </span>
+                  <span>Cancel Appointment</span>
+                </button>
+              </div>
+              <p id="artwork-upload-status" class="help" style="display:none;"></p>
+              <div id="artwork-preview" class="mt-3" style="display:none;">
+                <p>
+                  <strong>Uploaded artwork:</strong>
+                </p>
+                <img id="artwork-img" alt="Uploaded artwork" style="max-width:100%; height:auto;"/>
+                <p class="mt-2">
+                  <a id="artwork-link" href="#" target="_blank" rel="noopener">Open image</a>
+                </p>
+              </div>
             </div>
           </div>
-
-          <div class="box">
-            <h2 class="title is-5">Actions</h2>
-            <div class="buttons">
-              <button class="button is-primary">
-                <span class="icon"><i class="fas fa-calendar-plus"></i></span>
-                <span>Add to Calendar</span>
-              </button>
-              <button class="button is-danger" id="cancel-btn">
-                <span class="icon"><i class="fas fa-times"></i></span>
-                <span>Cancel Appointment</span>
-              </button>
+          <div id="success-content" style="display: none;">
+            <div class="box has-text-centered">
+              <span class="icon has-text-success">
+                <i class="fas fa-check-circle fa-3x"></i>
+              </span>
+              <h2 class="title is-4 mt-3">Appointment Cancelled</h2>
+              <p>Your appointment has been successfully cancelled.</p>
+              <a href="/" class="button is-primary mt-4">
+                <span class="icon">
+                  <i class="fas fa-home"></i>
+                </span>
+                <span>Go Home</span>
+              </a>
             </div>
-          </div>
-        </div>
-
-        <div id="success-content" style="display: none;">
-          <div class="box has-text-centered">
-            <span class="icon has-text-success">
-              <i class="fas fa-check-circle fa-3x"></i>
-            </span>
-            <h2 class="title is-4 mt-3">Appointment Cancelled</h2>
-            <p>Your appointment has been successfully cancelled.</p>
-            <a href="/" class="button is-primary mt-4">
-              <span class="icon"><i class="fas fa-home"></i></span>
-              <span>Go Home</span>
-            </a>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- Cancel Modal -->
-<div class="modal" id="cancel-modal">
-  <div class="modal-background"></div>
-  <div class="modal-card">
-    <header class="modal-card-head">
-      <p class="modal-card-title">Cancel Appointment</p>
-      <button class="delete" aria-label="close" id="close-modal"></button>
-    </header>
-    <section class="modal-card-body">
-      <p class="mb-3">Are you sure you want to cancel this appointment?</p>
-      <div class="field">
-        <label class="label">Reason (optional)</label>
-        <div class="control">
-          <textarea class="textarea" id="cancel-reason" placeholder="Let us know why you're cancelling..." rows="3"></textarea>
+  </section>
+  <!-- Cancel Modal -->
+  <div class="modal" id="cancel-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Cancel Appointment</p>
+        <button class="delete" aria-label="close" id="close-modal"></button>
+      </header>
+      <section class="modal-card-body">
+        <p class="mb-3">Are you sure you want to cancel this appointment?</p>
+        <div class="field">
+          <label class="label">Reason (optional)</label>
+          <div class="control">
+            <textarea class="textarea" id="cancel-reason" placeholder="Let us know why you're cancelling..." rows="3"></textarea>
+          </div>
         </div>
-      </div>
-    </section>
-    <footer class="modal-card-foot">
-      <button class="button is-danger" id="confirm-cancel">Confirm Cancel</button>
-      <button class="button" id="cancel-modal-btn">Keep Appointment</button>
-    </footer>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" id="confirm-cancel">Confirm Cancel</button>
+        <button class="button" id="cancel-modal-btn">Keep Appointment</button>
+      </footer>
+    </div>
   </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
-<script>
-  // Format appointment time
-  const appointmentTimeEl = document.getElementById('appointment-time');
-  const appointmentTime = '{{ reservation.spot.startTime }}';
-  const appointmentTimezone = '{{ reservation.spot.timezone }}';
-  appointmentTimeEl.textContent = moment.tz(appointmentTime, appointmentTimezone).format('MMMM D, YYYY [at] h:mm A');
-
-  // Extract reservation ID from URL
-  const path = window.location.pathname;
-  const reservationId = path.split('/').pop();
-
-  // Modal functionality
-  const modal = document.getElementById('cancel-modal');
-  const cancelBtn = document.getElementById('cancel-btn');
-  const closeModalBtn = document.getElementById('close-modal');
-  const cancelModalBtn = document.getElementById('cancel-modal-btn');
-  const confirmCancelBtn = document.getElementById('confirm-cancel');
-
-  cancelBtn.addEventListener('click', () => {
-    modal.classList.add('is-active');
-  });
-
-  closeModalBtn.addEventListener('click', () => {
-    modal.classList.remove('is-active');
-  });
-
-  cancelModalBtn.addEventListener('click', () => {
-    modal.classList.remove('is-active');
-  });
-
-  // Handle cancel confirmation
-  confirmCancelBtn.addEventListener('click', async () => {
-    const reason = document.getElementById('cancel-reason').value;
-
-    try {
-      const response = await fetch('/local/reservation/delete/' + reservationId, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reason: reason || null })
-      });
-
-      if (response.ok) {
-        modal.classList.remove('is-active');
-
-        // Replace page content with success message
-        document.getElementById('main-content').style.display = 'none';
-        document.getElementById('success-content').style.display = 'block';
-      } else {
-        alert('Failed to cancel appointment. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script>
+    // Format appointment time (no timezone conversion)
+    const appointmentTimeEl = document.getElementById('appointment-time');
+    const startTime = '{{ bestGuessStartDate }}';
+    const endTime = '{{ bestGuessEndDate }}';
+    function isValidMoment(value) {
+      return value && moment(value).isValid();
     }
-  });
-
-  // Close modal on background click
-  modal.querySelector('.modal-background').addEventListener('click', () => {
-    modal.classList.remove('is-active');
-  });
-</script>
+    if (isValidMoment(startTime) && isValidMoment(endTime)) {
+      const startFormatted = moment(startTime).format('MMMM D, YYYY [at] h:mm A');
+      const endFormatted = moment(endTime).format('h:mm A');
+      appointmentTimeEl.textContent = `${startFormatted} - ${endFormatted}`;
+    } else if (isValidMoment(startTime)) {
+      appointmentTimeEl.textContent = moment(startTime).format('MMMM D, YYYY [at] h:mm A');
+    } else {
+      appointmentTimeEl.textContent = '—';
+    }
+    // Extract reservation ID from URL
+    const path = window.location.pathname;
+    const reservationId = path.split('/').pop();
+    // Modal functionality
+    const modal = document.getElementById('cancel-modal');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+    const confirmCancelBtn = document.getElementById('confirm-cancel');
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.add('is-active');
+    });
+    closeModalBtn.addEventListener('click', () => {
+      modal.classList.remove('is-active');
+    });
+    cancelModalBtn.addEventListener('click', () => {
+      modal.classList.remove('is-active');
+    });
+    // Handle cancel confirmation
+    confirmCancelBtn.addEventListener('click', async () => {
+      const reason = document.getElementById('cancel-reason').value;
+      try {
+        const response = await fetch('/local/reservation/delete/' + reservationId, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(
+            {
+              reason: reason || null
+            }
+          )
+        });
+        if (response.ok) {
+          modal.classList.remove('is-active');
+          // Replace page content with success message
+          document
+            .getElementById('main-content')
+            .style
+            .display = 'none';
+          document
+            .getElementById('success-content')
+            .style
+            .display = 'block';
+        } else {
+          alert('Failed to cancel appointment. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+    // Close modal on background click
+    modal.querySelector('.modal-background').addEventListener('click', () => {
+      modal.classList.remove('is-active');
+    });
+    // Artwork upload handling
+    const artworkInput = document.getElementById('artwork-input');
+    const artworkStatus = document.getElementById('artwork-upload-status');
+    const artworkPreview = document.getElementById('artwork-preview');
+    const artworkImg = document.getElementById('artwork-img');
+    const artworkLink = document.getElementById('artwork-link');
+    artworkInput.addEventListener('change', async () => {
+      if (! artworkInput.files || ! artworkInput.files[0]) 
+        return;
+      
+      const file = artworkInput.files[0];
+      if (file.type !== 'image/png') {
+        artworkStatus.textContent = 'Only PNG files are allowed.';
+        artworkStatus.className = 'help is-danger';
+        artworkStatus.style.display = 'block';
+        return;
+      }
+      artworkStatus.textContent = 'Uploading...';
+      artworkStatus.className = 'help';
+      artworkStatus.style.display = 'block';
+      const formData = new FormData();
+      formData.append('artwork', file);
+      try {
+        const resp = await fetch('/local/artworks/upload', {
+          method: 'POST',
+          body: formData
+        });
+        if (! resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          artworkStatus.textContent = err.message || 'Upload failed';
+          artworkStatus.className = 'help is-danger';
+          return;
+        }
+        const result = await resp.json();
+        artworkStatus.textContent = 'Upload successful!';
+        artworkStatus.className = 'help is-success';
+        artworkPreview.style.display = 'block';
+        artworkImg.src = result.url;
+        artworkLink.href = result.url;
+      } catch (e) {
+        artworkStatus.textContent = 'Upload failed';
+        artworkStatus.className = 'help is-danger';
+      }
+    });
+  </script>
 {% endblock %}

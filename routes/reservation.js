@@ -20,6 +20,7 @@ router.get('/reserve/:spotId', async (req, res) => {
 
 router.get('/reservation/:reservationId', async (req, res) => {
   const reservationId = req.params.reservationId;
+  console.log('[reservation] route hit', reservationId);
   const apiEndpoint = process.env.API_ENDPOINT;
   const apiVersion = process.env.API_VERSION || 'v1';
 
@@ -27,6 +28,7 @@ router.get('/reservation/:reservationId', async (req, res) => {
     const response = await fetch(`${apiEndpoint}/${apiVersion}/reservation/${reservationId}`);
 
     if (!response.ok) {
+      console.warn('[reservation] API not ok', reservationId, response.status);
       return res.status(404).render('404.njk', {
         title: 'Reservation Not Found'
       });
@@ -34,12 +36,36 @@ router.get('/reservation/:reservationId', async (req, res) => {
 
     const data = await response.json();
 
+    // Extract fields for the updated template, with fallbacks for older API shapes
+    const spot = data.spot || (data.reservation && data.reservation.spot) || {};
+    const calendar = data.calendar || spot.calendar || {};
+    const visitor = data.visitor || {
+      name: data.visitorName,
+      email: data.visitorEmail
+    };
+    const bestGuessStartDate = data.bestGuessStartDate;
+    const bestGuessEndDate = data.bestGuessEndDate;
+    const icsURL = data.icsURL;
+
+    // Debug logging to verify data presence
+    console.log('[reservation]', reservationId, {
+      hasBestGuessStartDate: Boolean(bestGuessStartDate),
+      hasBestGuessEndDate: Boolean(bestGuessEndDate),
+      hasIcsURL: Boolean(icsURL)
+    });
+
     res.render('reservation-detail.njk', {
       title: 'Reservation Details',
-      reservation: data
+      reservation: data,
+      bestGuessStartDate,
+      bestGuessEndDate,
+      icsURL,
+      visitor,
+      calendar,
+      spot
     });
   } catch (error) {
-    console.error('Error fetching reservation:', error);
+    console.error('[reservation] Error fetching reservation:', reservationId, error);
     res.status(500).render('404.njk', {
       title: 'Error',
       message: 'An error occurred while loading the reservation details.'
