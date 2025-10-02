@@ -5,6 +5,12 @@
       <div class="columns is-centered">
         <div class="column is-10">
           <div>
+            <button class="button is-danger mb-5" id="forgot-appointment-btn">
+              <span class="icon">
+                <i class="fas fa-question-circle"></i>
+              </span>
+              <span>I Forgot My Appointment</span>
+            </button>
             {% set hasAvailableSpots = false %}
             {% for group in groupedSpots %}
               {% for spot in group.spots %}
@@ -15,7 +21,7 @@
             {% endfor %}
             {% if groupedSpots %}
               {% if not hasAvailableSpots %}
-                <div class="notification is-warning">
+                <div class="notification">
                   <p class="mb-3">
                     <strong>All spots are currently reserved!</strong>
                   </p>
@@ -50,7 +56,9 @@
                             </span>
                           </div>
                         {% else %}
-                          <a href="/reserve/{{ spot.spotId }}?startDate={{ spot.startDate }}&endDate={{ spot.endDate }}&timezone={{ calendar.owner.timezone }}&location={{ spot.location or calendar.location or calendar.name }}" class="slot unlocked">
+                          <a
+                            href="/reserve/{{ spot.spotId }}?startDate={{ spot.startDate }}&endDate={{ spot.endDate }}&timezone={{ calendar.owner.timezone }}&location={{ spot.location or calendar.location or calendar.name }}"
+                            class="slot unlocked">
                             <span class="spot-time" data-time="{{ spot.startDate }}" data-end-time="{{ spot.endDate }}"></span>
                             <span class="room">{{ spot.location or calendar.location or calendar.name }}</span>
                             <span class="icon">
@@ -86,166 +94,264 @@
         </div>
         <form id="waitlist-form">
           <input type="hidden" name="calendarURL" value="{{ calendar.url }}">
-          <input type="hidden" name="timezone" id="waitlist-timezone">
-          <div class="field">
-            <label class="label">Name</label>
-            <div class="control has-icons-left">
-              <input class="input" type="text" name="visitorName" id="waitlist-name" required minlength="2">
-              <span class="icon is-small is-left">
-                <i class="fas fa-user"></i>
-              </span>
+            <input type="hidden" name="timezone" id="waitlist-timezone">
+              <div class="field">
+                <label class="label">Name</label>
+                <div class="control has-icons-left">
+                  <input class="input" type="text" name="visitorName" id="waitlist-name" required minlength="2">
+                    <span class="icon is-small is-left">
+                      <i class="fas fa-user"></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Email</label>
+                  <div class="control has-icons-left">
+                    <input class="input" type="email" name="visitorEmail" id="waitlist-email" required>
+                      <span class="icon is-small is-left">
+                        <i class="fas fa-envelope"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Preferred Date (optional)</label>
+                    <div class="control has-icons-left">
+                      <input class="input" type="date" name="date" id="waitlist-date">
+                        <span class="icon is-small is-left">
+                          <i class="fas fa-calendar"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Comment (optional)</label>
+                      <div class="control">
+                        <textarea class="textarea" name="comment" id="waitlist-comment" rows="3"></textarea>
+                      </div>
+                    </div>
+                  </form>
+                </section>
+                <footer class="modal-card-foot">
+                  <button class="button is-primary" id="submit-waitlist">Join Waiting List</button>
+                  <button class="button" id="cancel-waitlist">Cancel</button>
+                </footer>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <label class="label">Email</label>
-            <div class="control has-icons-left">
-              <input class="input" type="email" name="visitorEmail" id="waitlist-email" required>
-              <span class="icon is-small is-left">
-                <i class="fas fa-envelope"></i>
-              </span>
-            </div>
-          </div>
-          <div class="field">
-            <label class="label">Preferred Date (optional)</label>
-            <div class="control has-icons-left">
-              <input class="input" type="date" name="date" id="waitlist-date">
-              <span class="icon is-small is-left">
-                <i class="fas fa-calendar"></i>
-              </span>
-            </div>
-          </div>
-          <div class="field">
-            <label class="label">Comment (optional)</label>
-            <div class="control">
-              <textarea class="textarea" name="comment" id="waitlist-comment" rows="3"></textarea>
-            </div>
-          </div>
-        </form>
-      </section>
-      <footer class="modal-card-foot">
-        <button class="button is-primary" id="submit-waitlist">Join Waiting List</button>
-        <button class="button" id="cancel-waitlist">Cancel</button>
-      </footer>
-    </div>
-  </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
-  <script>
-    document.querySelectorAll('.spot-date').forEach(el => {
-      const dateStr = el.getAttribute('data-date');
-      const formatted = moment(dateStr).format('dddd, MMMM D, YYYY');
-      el.textContent = formatted;
-    });
-    document.querySelectorAll('.spot-time').forEach(el => {
-      const startStr = el.getAttribute('data-time');
-      const endStr = el.getAttribute('data-end-time');
-      const startFormatted = moment(startStr).format('h:mm A');
-      const endFormatted = moment(endStr).format('h:mm A');
-      el.textContent = `${startFormatted} - ${endFormatted}`;
-    });
-
-    // Set timezone in hidden field
-    const waitlistTimezoneField = document.getElementById('waitlist-timezone');
-    if (waitlistTimezoneField) {
-      waitlistTimezoneField.value = moment.tz.guess();
-    }
-
-    // Waiting list modal functionality
-    const waitlistModal = document.getElementById('waitlist-modal');
-    const joinWaitlistBtn = document.getElementById('join-waitlist-btn');
-    const closeWaitlistModal = document.getElementById('close-waitlist-modal');
-    const cancelWaitlist = document.getElementById('cancel-waitlist');
-    const submitWaitlist = document.getElementById('submit-waitlist');
-    const waitlistForm = document.getElementById('waitlist-form');
-    const waitlistError = document.getElementById('waitlist-error');
-    const waitlistErrorText = document.getElementById('waitlist-error-text');
-    const waitlistSuccess = document.getElementById('waitlist-success');
-    const waitlistSuccessText = document.getElementById('waitlist-success-text');
-
-    if (joinWaitlistBtn) {
-      joinWaitlistBtn.addEventListener('click', () => {
-        waitlistModal.classList.add('is-active');
-      });
-    }
-
-    closeWaitlistModal.addEventListener('click', () => {
-      waitlistModal.classList.remove('is-active');
-    });
-
-    cancelWaitlist.addEventListener('click', () => {
-      waitlistModal.classList.remove('is-active');
-    });
-
-    waitlistModal.querySelector('.modal-background').addEventListener('click', () => {
-      waitlistModal.classList.remove('is-active');
-    });
-
-    submitWaitlist.addEventListener('click', async () => {
-      waitlistError.style.display = 'none';
-      waitlistSuccess.style.display = 'none';
-
-      const formData = new FormData(waitlistForm);
-      const visitorName = formData.get('visitorName');
-      const visitorEmail = formData.get('visitorEmail');
-      const date = formData.get('date');
-      const comment = formData.get('comment');
-      const calendarURL = formData.get('calendarURL');
-      const timezone = formData.get('timezone');
-
-      if (!visitorName || visitorName.trim().length < 2) {
-        waitlistErrorText.textContent = 'Name must be at least 2 characters long';
-        waitlistError.style.display = 'block';
-        return;
-      }
-
-      if (!visitorEmail || !visitorEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        waitlistErrorText.textContent = 'Please enter a valid email address';
-        waitlistError.style.display = 'block';
-        return;
-      }
-
-      const requestBody = {
-        calendarURL,
-        visitorName: visitorName.trim(),
-        visitorEmail: visitorEmail.trim(),
-        timezone,
-        ...(date && { date }),
-        ...(comment && { comment: comment.trim() })
-      };
-
-      try {
-        const response = await fetch('/local/waitlist/join', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        });
-
-        if (response.ok) {
-          waitlistForm.style.display = 'none';
-          submitWaitlist.style.display = 'none';
-          cancelWaitlist.textContent = 'Close';
-          waitlistSuccessText.innerHTML = '<strong>Success!</strong> You\'ve been added to the waiting list. We\'ll notify you when a spot becomes available.';
-          waitlistSuccess.style.display = 'block';
-
-          setTimeout(() => {
-            waitlistModal.classList.remove('is-active');
-            waitlistForm.reset();
-            waitlistForm.style.display = 'block';
-            submitWaitlist.style.display = 'inline-flex';
-            cancelWaitlist.textContent = 'Cancel';
-            waitlistSuccess.style.display = 'none';
-          }, 3000);
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          waitlistErrorText.textContent = errorData.message || 'Failed to join waiting list. Please try again.';
-          waitlistError.style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        waitlistErrorText.textContent = 'An error occurred. Please try again.';
-        waitlistError.style.display = 'block';
-      }
-    });
-  </script>
-{% endblock %}
+            <!-- Forgot Appointment Modal -->
+            <div class="modal" id="forgot-appointment-modal">
+              <div class="modal-background"></div>
+              <div class="modal-card">
+                <header class="modal-card-head">
+                  <p class="modal-card-title">Retrieve Your Appointment</p>
+                  <button class="delete" aria-label="close" id="close-forgot-modal"></button>
+                </header>
+                <section class="modal-card-body">
+                  <div id="forgot-error" class="notification is-danger" style="display: none;">
+                    <p id="forgot-error-text"></p>
+                  </div>
+                  <div id="forgot-success" class="notification is-success" style="display: none;">
+                    <p id="forgot-success-text"></p>
+                  </div>
+                  <form id="forgot-form">
+                    <input type="hidden" name="urlOfCalendar" value="{{ calendar.url }}">
+                      <div class="field">
+                        <label class="label">Email Address</label>
+                        <div class="control has-icons-left">
+                          <input class="input" type="email" name="email" id="forgot-email" required>
+                            <span class="icon is-small is-left">
+                              <i class="fas fa-envelope"></i>
+                            </span>
+                          </div>
+                          <p class="help">We'll send you an email with your reservation details and calendar file.</p>
+                        </div>
+                      </form>
+                    </section>
+                    <footer class="modal-card-foot">
+                      <button class="button is-primary" id="submit-forgot">Send Me My Appointments</button>
+                      <button class="button" id="cancel-forgot">Cancel</button>
+                    </footer>
+                  </div>
+                </div>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone-with-data.min.js"></script>
+                <script>
+                  document.querySelectorAll('.spot-date').forEach(el => {
+                    const dateStr = el.getAttribute('data-date');
+                    const formatted = moment(dateStr).format('dddd [the] Do [of] MMMM');
+                    el.textContent = formatted;
+                  });
+                  document.querySelectorAll('.spot-time').forEach(el => {
+                    const startStr = el.getAttribute('data-time');
+                    const endStr = el.getAttribute('data-end-time');
+                    const startFormatted = moment(startStr).format('h:mm A');
+                    const endFormatted = moment(endStr).format('h:mm A');
+                    el.textContent = `${startFormatted} - ${endFormatted}`;
+                  });
+                  // Set timezone in hidden field
+                  const waitlistTimezoneField = document.getElementById('waitlist-timezone');
+                  if (waitlistTimezoneField) {
+                    waitlistTimezoneField.value = moment.tz.guess();
+                  }
+                  // Waiting list modal functionality
+                  const waitlistModal = document.getElementById('waitlist-modal');
+                  const joinWaitlistBtn = document.getElementById('join-waitlist-btn');
+                  const closeWaitlistModal = document.getElementById('close-waitlist-modal');
+                  const cancelWaitlist = document.getElementById('cancel-waitlist');
+                  const submitWaitlist = document.getElementById('submit-waitlist');
+                  const waitlistForm = document.getElementById('waitlist-form');
+                  const waitlistError = document.getElementById('waitlist-error');
+                  const waitlistErrorText = document.getElementById('waitlist-error-text');
+                  const waitlistSuccess = document.getElementById('waitlist-success');
+                  const waitlistSuccessText = document.getElementById('waitlist-success-text');
+                  if (joinWaitlistBtn) {
+                    joinWaitlistBtn.addEventListener('click', () => {
+                      waitlistModal.classList.add('is-active');
+                    });
+                  }
+                  closeWaitlistModal.addEventListener('click', () => {
+                    waitlistModal.classList.remove('is-active');
+                  });
+                  cancelWaitlist.addEventListener('click', () => {
+                    waitlistModal.classList.remove('is-active');
+                  });
+                  waitlistModal.querySelector('.modal-background').addEventListener('click', () => {
+                    waitlistModal.classList.remove('is-active');
+                  });
+                  submitWaitlist.addEventListener('click', async () => {
+                    waitlistError.style.display = 'none';
+                    waitlistSuccess.style.display = 'none';
+                    const formData = new FormData(waitlistForm);
+                    const visitorName = formData.get('visitorName');
+                    const visitorEmail = formData.get('visitorEmail');
+                    const date = formData.get('date');
+                    const comment = formData.get('comment');
+                    const calendarURL = formData.get('calendarURL');
+                    const timezone = formData.get('timezone');
+                    if (! visitorName || visitorName.trim().length < 2) {
+                      waitlistErrorText.textContent = 'Name must be at least 2 characters long';
+                      waitlistError.style.display = 'block';
+                      return;
+                    }
+                    if (! visitorEmail || ! visitorEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                      waitlistErrorText.textContent = 'Please enter a valid email address';
+                      waitlistError.style.display = 'block';
+                      return;
+                    }
+                    const requestBody = {
+                      calendarURL,
+                      visitorName: visitorName.trim(),
+                      visitorEmail: visitorEmail.trim(),
+                      timezone,
+                      ...(date && date.trim() && {
+                        date: date.trim()
+                      }),
+                      ...(comment && comment.trim() && {
+                        comment: comment.trim()
+                      })
+                    };
+                    try {
+                      const response = await fetch('/local/waitlist/join', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                      });
+                      if (response.ok) {
+                        waitlistForm.style.display = 'none';
+                        submitWaitlist.style.display = 'none';
+                        cancelWaitlist.textContent = 'Close';
+                        waitlistSuccessText.innerHTML = '<strong>Success!</strong> You\'ve been added to the waiting list. We\'ll notify you when a spot becomes available.';
+                        waitlistSuccess.style.display = 'block';
+                        setTimeout(() => {
+                          waitlistModal.classList.remove('is-active');
+                          waitlistForm.reset();
+                          waitlistForm.style.display = 'block';
+                          submitWaitlist.style.display = 'inline-flex';
+                          cancelWaitlist.textContent = 'Cancel';
+                          waitlistSuccess.style.display = 'none';
+                        }, 3000);
+                      } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        waitlistErrorText.textContent = errorData.message || 'Failed to join waiting list. Please try again.';
+                        waitlistError.style.display = 'block';
+                      }
+                    } catch (error) {
+                      console.error('Error:', error);
+                      waitlistErrorText.textContent = 'An error occurred. Please try again.';
+                      waitlistError.style.display = 'block';
+                    }
+                  });
+                  // Forgot appointment modal functionality
+                  const forgotModal = document.getElementById('forgot-appointment-modal');
+                  const forgotBtn = document.getElementById('forgot-appointment-btn');
+                  const closeForgotModal = document.getElementById('close-forgot-modal');
+                  const cancelForgot = document.getElementById('cancel-forgot');
+                  const submitForgot = document.getElementById('submit-forgot');
+                  const forgotForm = document.getElementById('forgot-form');
+                  const forgotError = document.getElementById('forgot-error');
+                  const forgotErrorText = document.getElementById('forgot-error-text');
+                  const forgotSuccess = document.getElementById('forgot-success');
+                  const forgotSuccessText = document.getElementById('forgot-success-text');
+                  if (forgotBtn) {
+                    forgotBtn.addEventListener('click', () => {
+                      forgotModal.classList.add('is-active');
+                    });
+                  }
+                  closeForgotModal.addEventListener('click', () => {
+                    forgotModal.classList.remove('is-active');
+                  });
+                  cancelForgot.addEventListener('click', () => {
+                    forgotModal.classList.remove('is-active');
+                  });
+                  forgotModal.querySelector('.modal-background').addEventListener('click', () => {
+                    forgotModal.classList.remove('is-active');
+                  });
+                  submitForgot.addEventListener('click', async () => {
+                    forgotError.style.display = 'none';
+                    forgotSuccess.style.display = 'none';
+                    const formData = new FormData(forgotForm);
+                    const email = formData.get('email');
+                    const urlOfCalendar = formData.get('urlOfCalendar');
+                    if (! email || ! email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                      forgotErrorText.textContent = 'Please enter a valid email address';
+                      forgotError.style.display = 'block';
+                      return;
+                    }
+                    const requestBody = {
+                      email: email.trim(),
+                      urlOfCalendar
+                    };
+                    try {
+                      const response = await fetch('/local/calendar/forgotten', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                      });
+                      if (response.ok) {
+                        forgotForm.style.display = 'none';
+                        submitForgot.style.display = 'none';
+                        cancelForgot.textContent = 'Close';
+                        forgotSuccessText.innerHTML = '<strong>Success!</strong> We\'ve sent an email to <strong>' + email + '</strong> with your appointment details and calendar file.';
+                        forgotSuccess.style.display = 'block';
+                        setTimeout(() => {
+                          forgotModal.classList.remove('is-active');
+                          forgotForm.reset();
+                          forgotForm.style.display = 'block';
+                          submitForgot.style.display = 'inline-flex';
+                          cancelForgot.textContent = 'Cancel';
+                          forgotSuccess.style.display = 'none';
+                        }, 5000);
+                      } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        forgotErrorText.textContent = errorData.message || 'Failed to retrieve appointments. Please try again.';
+                        forgotError.style.display = 'block';
+                      }
+                    } catch (error) {
+                      console.error('Error:', error);
+                      forgotErrorText.textContent = 'An error occurred. Please try again.';
+                      forgotError.style.display = 'block';
+                    }
+                  });
+                </script>
+              {% endblock %}

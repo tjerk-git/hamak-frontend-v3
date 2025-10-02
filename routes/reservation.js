@@ -37,15 +37,16 @@ router.get('/reservation/:reservationId', async (req, res) => {
     const data = await response.json();
 
     // Extract fields for the updated template, with fallbacks for older API shapes
-    const spot = data.spot || (data.reservation && data.reservation.spot) || {};
+    const reservation = data.reservation || data;
+    const spot = data.spot || reservation.spot || {};
     const calendar = data.calendar || spot.calendar || {};
-    const visitor = data.visitor || {
-      name: data.visitorName,
-      email: data.visitorEmail
+    const visitor = reservation.visitor || data.visitor || {
+      name: data.visitorName || reservation.visitorName,
+      email: data.visitorEmail || reservation.visitorEmail
     };
-    const bestGuessStartDate = data.bestGuessStartDate;
-    const bestGuessEndDate = data.bestGuessEndDate;
-    const icsURL = data.icsURL;
+    const bestGuessStartDate = reservation.bestGuessStartDate || data.bestGuessStartDate;
+    const bestGuessEndDate = reservation.bestGuessEndDate || data.bestGuessEndDate;
+    const icsURL = reservation.icsURL || data.icsURL;
 
     // Debug logging to verify data presence
     console.log('[reservation]', reservationId, {

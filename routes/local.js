@@ -89,7 +89,11 @@ router.post('/reserve', async (req, res) => {
       ...(timezone && { timezone })
     };
 
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/spots/reserve`, {
+    const url = `${apiEndpoint}/${apiVersion}/spots/reserve`;
+    console.log('[reserve] POST to:', url);
+    console.log('[reserve] Request body:', requestBody);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -97,21 +101,34 @@ router.post('/reserve', async (req, res) => {
       body: JSON.stringify(requestBody)
     });
 
+    console.log('[reserve] Response status:', response.status);
+
+    // Handle 502 - request might have succeeded despite gateway error
+    if (response.status === 502) {
+      console.log('[reserve] Got 502 - backend might be cold starting, request may have succeeded');
+      return res.status(502).json({
+        message: 'Server is starting up. The reservation might have been created. Please refresh the calendar page to check, or try again in a moment.',
+        code: 'GATEWAY_TIMEOUT'
+      });
+    }
     const contentType = response.headers.get('content-type');
+    console.log('[reserve] Content-Type:', contentType);
 
     // Check if response is JSON
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json();
+      console.log('[reserve] Response data:', JSON.stringify(data, null, 2));
 
-      if (!response.ok) {
-        return res.status(response.status).json(data);
+      // Check for error in response body (some APIs return 2xx with error:true)
+      if (!response.ok || data.error) {
+        return res.status(response.status >= 400 ? response.status : 400).json(data);
       }
 
       res.json(data);
     } else {
       // Response is not JSON (probably HTML error page)
       const text = await response.text();
-      console.error('Non-JSON response from API:', text.substring(0, 200));
+      console.error('[reserve] Non-JSON response from API:', text.substring(0, 200));
       return res.status(response.status || 500).json({
         message: 'Backend API returned an unexpected response format'
       });
@@ -184,6 +201,70 @@ router.post('/waitlist/join', async (req, res) => {
     }
   } catch (error) {
     console.error('Error in /local/waitlist/join:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/calendar/forgotten', async (req, res) => {
+  const { email, urlOfCalendar } = req.body;
+
+  // Validate required fields
+  if (!email) {
+    return res.status(400).json({ message: 'email is required' });
+  }
+
+  if (!urlOfCalendar) {
+    return res.status(400).json({ message: 'urlOfCalendar is required' });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'email must be a valid email format' });
+  }
+
+  try {
+    const apiEndpoint = process.env.API_ENDPOINT;
+    const apiVersion = process.env.API_VERSION || 'v1';
+
+    const requestBody = {
+      email: email.trim(),
+      urlOfCalendar
+    };
+
+    console.log('[forgotten] POST to:', `${apiEndpoint}/${apiVersion}/calendar/forgotten`);
+    console.log('[forgotten] Request body:', requestBody);
+
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendar/forgotten`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('[forgotten] Response status:', response.status);
+    const contentType = response.headers.get('content-type');
+    console.log('[forgotten] Content-Type:', contentType);
+
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      console.log('[forgotten] Response data:', JSON.stringify(data, null, 2));
+
+      if (!response.ok || data.error) {
+        return res.status(response.status >= 400 ? response.status : 400).json(data);
+      }
+
+      res.json(data);
+    } else {
+      const text = await response.text();
+      console.error('[forgotten] Non-JSON response from API:', text.substring(0, 200));
+      return res.status(response.status || 500).json({
+        message: 'Backend API returned an unexpected response format'
+      });
+    }
+  } catch (error) {
+    console.error('Error in /local/calendar/forgotten:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
