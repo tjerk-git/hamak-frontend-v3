@@ -46,7 +46,8 @@ router.get('/reservation/:reservationId', async (req, res) => {
     };
     const bestGuessStartDate = reservation.bestGuessStartDate || data.bestGuessStartDate;
     const bestGuessEndDate = reservation.bestGuessEndDate || data.bestGuessEndDate;
-    const icsURL = reservation.icsURL || data.icsURL;
+    const relativeIcsURL = reservation.icsURL || data.icsURL;
+    const icsURL = relativeIcsURL ? `${apiEndpoint}${relativeIcsURL}` : null;
 
     // Debug logging to verify data presence
     console.log('[reservation]', reservationId, {

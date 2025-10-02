@@ -1,0 +1,112 @@
+{% extends "base.njk" %}
+{% block content %}
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="box" style="background: white; padding: 3rem;">
+            <div class="has-text-centered mb-5">
+              <span class="icon is-large has-text-primary" style="font-size: 4rem;">
+                <i class="fas fa-lock"></i>
+              </span>
+            </div>
+            <h1 class="title has-text-centered mb-5">Access Restricted</h1>
+            <p class="has-text-centered mb-5">
+              This calendar requires email verification. Please enter your email address to verify access.
+            </p>
+
+            <div id="validation-error" class="notification is-danger" style="display: none;">
+              <p id="validation-error-text"></p>
+            </div>
+
+            <div id="validation-success" class="notification is-success" style="display: none;">
+              <p id="validation-success-text"></p>
+            </div>
+
+            <form id="validation-form">
+              <input type="hidden" name="calendarUrl" value="{{ calendarUrl }}">
+              <div class="field">
+                <label class="label">Email Address</label>
+                <div class="control has-icons-left">
+                  <input class="input is-large" type="email" name="email" id="validation-email" placeholder="your@email.com" required>
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="control">
+                  <button type="submit" class="button is-primary is-fullwidth is-large">
+                    <span class="icon">
+                      <i class="fas fa-check"></i>
+                    </span>
+                    <span>Verify Access</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const validationForm = document.getElementById('validation-form');
+    const validationError = document.getElementById('validation-error');
+    const validationErrorText = document.getElementById('validation-error-text');
+    const validationSuccess = document.getElementById('validation-success');
+    const validationSuccessText = document.getElementById('validation-success-text');
+    const submitButton = validationForm.querySelector('button[type="submit"]');
+
+    validationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      validationError.style.display = 'none';
+      validationSuccess.style.display = 'none';
+
+      const formData = new FormData(validationForm);
+      const email = formData.get('email');
+      const calendarUrl = formData.get('calendarUrl');
+
+      if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        validationErrorText.textContent = 'Please enter a valid email address';
+        validationError.style.display = 'block';
+        return;
+      }
+
+      submitButton.classList.add('is-loading');
+
+      try {
+        const response = await fetch('/local/calendar/validate-access', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            calendarUrl
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          validationSuccessText.innerHTML = '<strong>Request Sent!</strong> Please check your email for the access link.';
+          validationSuccess.style.display = 'block';
+          validationForm.style.display = 'none';
+        } else {
+          validationErrorText.textContent = data.message || 'Access denied. Please check your email address.';
+          validationError.style.display = 'block';
+          submitButton.classList.remove('is-loading');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        validationErrorText.textContent = 'An error occurred. Please try again.';
+        validationError.style.display = 'block';
+        submitButton.classList.remove('is-loading');
+      }
+    });
+  </script>
+{% endblock %}
