@@ -94,21 +94,16 @@
       </footer>
     </div>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
   <script>
-    // Format appointment time (no timezone conversion)
+    // Display appointment time as-is from backend
     const appointmentTimeEl = document.getElementById('appointment-time');
     const startTime = '{{ bestGuessStartDate }}';
     const endTime = '{{ bestGuessEndDate }}';
-    function isValidMoment(value) {
-      return value && moment(value).isValid();
-    }
-    if (isValidMoment(startTime) && isValidMoment(endTime)) {
-      const startFormatted = moment(startTime).format('MMMM D, YYYY [at] h:mm A');
-      const endFormatted = moment(endTime).format('h:mm A');
-      appointmentTimeEl.textContent = `${startFormatted} - ${endFormatted}`;
-    } else if (isValidMoment(startTime)) {
-      appointmentTimeEl.textContent = moment(startTime).format('MMMM D, YYYY [at] h:mm A');
+
+    if (startTime && endTime) {
+      appointmentTimeEl.textContent = `${startTime} - ${endTime}`;
+    } else if (startTime) {
+      appointmentTimeEl.textContent = startTime;
     } else {
       appointmentTimeEl.textContent = '—';
     }

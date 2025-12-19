@@ -76,7 +76,7 @@ router.post('/reserve', async (req, res) => {
 
   try {
     const apiEndpoint = process.env.API_ENDPOINT;
-    const apiVersion = process.env.API_VERSION || 'v1';
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
 
     const requestBody = {
       spotId,
@@ -86,7 +86,7 @@ router.post('/reserve', async (req, res) => {
       ...(timezone && { timezone })
     };
 
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/spots/reserve`, {
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/reservations`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -125,13 +125,13 @@ router.delete('/reservation/delete/:reservationId', async (req, res) => {
 
   try {
     const apiEndpoint = process.env.API_ENDPOINT;
-    const apiVersion = process.env.API_VERSION || 'v1';
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
 
     const requestBody = {
       ...(reason && { reason: reason.trim() })
     };
 
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/reservation/delete/${reservationId}`, {
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/reservations/${reservationId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -182,17 +182,17 @@ router.post('/calendar/validate-access', async (req, res) => {
 
   try {
     const apiEndpoint = process.env.API_ENDPOINT;
-    const apiVersion = process.env.API_VERSION || 'v1';
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
 
     const requestBody = {
       email: email.trim(),
       calendarURL: calendarUrl
     };
 
-    console.log('[validate-access] POST to:', `${apiEndpoint}/${apiVersion}/calendar/request-access`);
+    console.log('[validate-access] POST to:', `${apiEndpoint}/${apiVersion}/calendars/request-access`);
     console.log('[validate-access] Request body:', requestBody);
 
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendar/request-access`, {
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendars/request-access`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -230,6 +230,162 @@ router.post('/calendar/validate-access', async (req, res) => {
     }
   } catch (error) {
     console.error('Error in /local/calendar/validate-access:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/waitlist/join', async (req, res) => {
+  const { calendarURL, preferredDate, visitorEmail, visitorName, comment, timezone } = req.body;
+
+  // Validate required fields
+  if (!calendarURL) {
+    return res.status(400).json({ message: 'calendarURL is required' });
+  }
+
+  if (!preferredDate) {
+    return res.status(400).json({ message: 'preferredDate is required' });
+  }
+
+  if (!visitorEmail) {
+    return res.status(400).json({ message: 'visitorEmail is required' });
+  }
+
+  if (!visitorName) {
+    return res.status(400).json({ message: 'visitorName is required' });
+  }
+
+  if (!comment) {
+    return res.status(400).json({ message: 'comment is required' });
+  }
+
+  if (!timezone) {
+    return res.status(400).json({ message: 'timezone is required' });
+  }
+
+  // Validate preferredDate is a valid date
+  const parsedDate = new Date(preferredDate);
+  if (isNaN(parsedDate.getTime())) {
+    return res.status(400).json({ message: 'preferredDate must be a valid date' });
+  }
+
+  // Validate visitorName length
+  if (visitorName.trim().length < 2) {
+    return res.status(400).json({ message: 'visitorName must be at least 2 characters long' });
+  }
+
+  // Validate visitorEmail format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(visitorEmail)) {
+    return res.status(400).json({ message: 'visitorEmail must be a valid email format' });
+  }
+
+  try {
+    const apiEndpoint = process.env.API_ENDPOINT;
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
+
+    const requestBody = {
+      calendarURL: calendarURL.trim(),
+      date: preferredDate,
+      visitorEmail: visitorEmail.trim(),
+      visitorName: visitorName.trim(),
+      comment: comment.trim(),
+      timezone
+    };
+
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/waiting-lists`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const contentType = response.headers.get('content-type');
+
+    // Check if response is JSON
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+
+      res.json(data);
+    } else {
+      // Response is not JSON (probably HTML error page)
+      const text = await response.text();
+      console.error('Non-JSON response from API:', text.substring(0, 200));
+      return res.status(response.status || 500).json({
+        message: 'Backend API returned an unexpected response format'
+      });
+    }
+  } catch (error) {
+    console.error('Error in /local/waitlist/join:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/calendar/forgotten', async (req, res) => {
+  const { email, urlOfCalendar } = req.body;
+
+  // Validate required fields
+  if (!email) {
+    return res.status(400).json({ message: 'email is required' });
+  }
+
+  if (!urlOfCalendar) {
+    return res.status(400).json({ message: 'urlOfCalendar is required' });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'email must be a valid email format' });
+  }
+
+  try {
+    const apiEndpoint = process.env.API_ENDPOINT;
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
+
+    const requestBody = {
+      email: email.trim(),
+      urlOfCalendar: urlOfCalendar.trim()
+    };
+
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendars/${urlOfCalendar}/forgot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const contentType = response.headers.get('content-type');
+
+    // Check if response is JSON or handle no-content response
+    if (response.status === 204) {
+      // No content - success
+      return res.status(204).send();
+    }
+
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+
+      res.json(data);
+    } else {
+      // Response is not JSON (probably HTML error page)
+      const text = await response.text();
+      console.error('Non-JSON response from API:', text.substring(0, 200));
+      return res.status(response.status || 500).json({
+        message: 'Backend API returned an unexpected response format'
+      });
+    }
+  } catch (error) {
+    console.error('Error in /local/calendar/forgotten:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

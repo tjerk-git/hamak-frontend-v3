@@ -11,8 +11,8 @@ router.get('/:url', async (req, res) => {
   try {
     // Fetch calendar data from configured API endpoint
     const apiEndpoint = process.env.API_ENDPOINT;
-    const apiVersion = process.env.API_VERSION || 'v1';
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendar/${calendarUrl}`);
+    const apiVersion = process.env.API_VERSION || 'web-api/v1';
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/calendars/${calendarUrl}`);
 
     if (!response.ok) {
       return res.status(404).render('404.njk', {
@@ -34,7 +34,7 @@ router.get('/:url', async (req, res) => {
       // If token is provided, verify it with the backend
       if (token) {
         try {
-          const verifyResponse = await fetch(`${apiEndpoint}/${apiVersion}/calendar/verify-token/${token}`);
+          const verifyResponse = await fetch(`${apiEndpoint}/${apiVersion}/calendars/verify-token/${token}`);
 
           if (verifyResponse.ok) {
             // Token is valid, set the cookie

@@ -22,10 +22,10 @@ router.get('/reservation/:reservationId', async (req, res) => {
   const reservationId = req.params.reservationId;
   console.log('[reservation] route hit', reservationId);
   const apiEndpoint = process.env.API_ENDPOINT;
-  const apiVersion = process.env.API_VERSION || 'v1';
+  const apiVersion = process.env.API_VERSION || 'web-api/v1';
 
   try {
-    const response = await fetch(`${apiEndpoint}/${apiVersion}/reservation/${reservationId}`);
+    const response = await fetch(`${apiEndpoint}/${apiVersion}/reservations/${reservationId}`);
 
     if (!response.ok) {
       console.warn('[reservation] API not ok', reservationId, response.status);

@@ -8,6 +8,7 @@ import aboutRoutes from './routes/about.js';
 import calendarRoutes from './routes/calendar.js';
 import reservationRoutes from './routes/reservation.js';
 import localRoutes from './routes/local.js';
+import artworksRoutes from './routes/artworks.js';
 
 dotenv.config();
 
@@ -30,11 +31,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // Routes
+// IMPORTANT: Specific routes must come before wildcard routes
+// The calendar route has /:url which catches everything
 app.use('/', homeRoutes);
 app.use('/about', aboutRoutes);
 app.use('/local', localRoutes);
 app.use('/', reservationRoutes);
-app.use('/', calendarRoutes);
+app.use('/', artworksRoutes);
+app.use('/', calendarRoutes); // Keep this last - it has /:url wildcard
 
 // 404 handler
 app.use((req, res) => {
