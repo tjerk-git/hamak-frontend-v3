@@ -235,15 +235,11 @@ router.post('/calendar/validate-access', async (req, res) => {
 });
 
 router.post('/waitlist/join', async (req, res) => {
-  const { calendarURL, preferredDate, visitorEmail, visitorName, comment, timezone } = req.body;
+  const { calendarURL, date, visitorEmail, visitorName, comment, timezone } = req.body;
 
   // Validate required fields
   if (!calendarURL) {
     return res.status(400).json({ message: 'calendarURL is required' });
-  }
-
-  if (!preferredDate) {
-    return res.status(400).json({ message: 'preferredDate is required' });
   }
 
   if (!visitorEmail) {
@@ -254,18 +250,16 @@ router.post('/waitlist/join', async (req, res) => {
     return res.status(400).json({ message: 'visitorName is required' });
   }
 
-  if (!comment) {
-    return res.status(400).json({ message: 'comment is required' });
-  }
-
   if (!timezone) {
     return res.status(400).json({ message: 'timezone is required' });
   }
 
-  // Validate preferredDate is a valid date
-  const parsedDate = new Date(preferredDate);
-  if (isNaN(parsedDate.getTime())) {
-    return res.status(400).json({ message: 'preferredDate must be a valid date' });
+  // Validate date is a valid date (if provided)
+  if (date) {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ message: 'date must be a valid date' });
+    }
   }
 
   // Validate visitorName length
@@ -285,11 +279,11 @@ router.post('/waitlist/join', async (req, res) => {
 
     const requestBody = {
       calendarURL: calendarURL.trim(),
-      date: preferredDate,
       visitorEmail: visitorEmail.trim(),
       visitorName: visitorName.trim(),
-      comment: comment.trim(),
-      timezone
+      timezone,
+      ...(date && { date }),
+      ...(comment && { comment: comment.trim() })
     };
 
     const response = await fetch(`${apiEndpoint}/${apiVersion}/waiting-lists`, {
