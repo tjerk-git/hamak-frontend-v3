@@ -1,10 +1,29 @@
 {% extends "base.njk" %}
+{% block header_title %}
+  <strong class="header-title">{{ calendar.name }}</strong>
+{% endblock %}
+
 {% block content %}
   <section class="section">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column is-10">
           <div>
+            {% if calendar.description or calendar.location %}
+              <div class="box">
+                {% if calendar.description %}
+                  <p class="mb-2">{{ calendar.description }}</p>
+                {% endif %}
+                {% if calendar.location %}
+                  <p class="has-text-grey">
+                    <span class="icon is-small">
+                      <i class="fas fa-map-marker-alt"></i>
+                    </span>
+                    <span>{{ calendar.location }}</span>
+                  </p>
+                {% endif %}
+              </div>
+            {% endif %}
             <button class="button is-danger mb-5" id="forgot-appointment-btn">
               <span class="icon">
                 <i class="fas fa-question-circle"></i>
