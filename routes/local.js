@@ -254,12 +254,14 @@ router.post('/waitlist/join', async (req, res) => {
     return res.status(400).json({ message: 'timezone is required' });
   }
 
-  // Validate date is a valid date (if provided)
-  if (date) {
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) {
-      return res.status(400).json({ message: 'date must be a valid date' });
-    }
+  if (!date) {
+    return res.status(400).json({ message: 'date is required' });
+  }
+
+  // Validate date is a valid date
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) {
+    return res.status(400).json({ message: 'date must be a valid date' });
   }
 
   // Validate visitorName length
@@ -279,10 +281,10 @@ router.post('/waitlist/join', async (req, res) => {
 
     const requestBody = {
       calendarURL: calendarURL.trim(),
+      date,
       visitorEmail: visitorEmail.trim(),
       visitorName: visitorName.trim(),
       timezone,
-      ...(date && { date }),
       ...(comment && { comment: comment.trim() })
     };
 
